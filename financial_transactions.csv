@@ -1,0 +1,11 @@
+transaction_id,date,customer_id,amount,type,description
+1,2020-10-26,926,6478.39,credit,Expect series shake art again our.
+2,2020-01-08,466,1255.95,credit,Each left similar likely coach take.
+3,2019-09-02,110,7969.68,debit,Direction wife job pull determine leader move college.
+4,2021-04-10,926,120.00,debit,Coffee shop purchase
+5,2021-04-12,466,5000.00,transfer,Transfer to savings
+6,2021-05-01,110,150.00,credit,Refund from overpayment
+7,2021-05-20,926,300.00,debit,Grocery store
+8,2021-06-15,466,220.00,debit,Electric bill
+9,2021-07-01,110,1450.00,credit,Paycheck deposit
+10,2021-08-03,926,135.50,debit,Bookstore purchase
