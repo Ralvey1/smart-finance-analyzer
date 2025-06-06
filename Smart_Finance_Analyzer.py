@@ -8,13 +8,13 @@ def load_transactions(filename='financial_transactions.csv'):
             reader = csv.DictReader(file)
             for row in reader:
                 try:
-                    date = datetime.strptime(date_input, "%m-%d-%Y")
+                    parsed_date = datetime.strptime(row['date'], "%Y-%m-%d")
                     amount = float(row['amount'])
                     if row['type'] == 'debit':
                         amount *= -1
                     transaction = {
                         'transaction_id': int(row['transaction_id']),
-                        'date': trans_date,
+                        'date': parsed_date,
                         'customer_id': int(row['customer_id']),
                         'amount': amount,
                         'type': row['type'],
@@ -75,7 +75,7 @@ def add_transaction(transactions):
         transactions.append(new_transaction)
         print("Transaction added!")
 
-    except Exception as e:
+     except Exception as e:
         print(f"Error: {e}")
 
 def view_transactions(transactions):
@@ -95,7 +95,7 @@ def analyze_finances(transactions):
     net = 0
     for t in transactions:
         net += t['amount']
-
+  
     print("\nFinancial Summary:")
     for key, val in totals.items():
         print(f"Total {key.title()}s: ${val:.2f}")
@@ -127,3 +127,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+   
