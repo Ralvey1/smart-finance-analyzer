@@ -31,6 +31,7 @@ Getting Started
 
 git clone https://github.com/RAlvey1/smart-finance-analyzer.git
 
+
 2. Change into the project directory
 
 cd smart-finance-analyzer
