@@ -29,7 +29,7 @@ Getting Started
 
 1. Clone this repository
 
-git clone https://github.com/YOUR-USERNAME/smart-finance-analyzer.git
+git clone https://github.com/RAlvey1/smart-finance-analyzer.git
 
 2. Change into the project directory
 
