@@ -8,13 +8,13 @@ def load_transactions(filename='financial_transactions.csv'):
             reader = csv.DictReader(file)
             for row in reader:
                 try:
-                    date = datetime.strptime(date_input, "%m-%d-%Y")
+                    parsed_date = datetime.strptime(row['date'], "%Y-%m-%d")
                     amount = float(row['amount'])
                     if row['type'] == 'debit':
                         amount *= -1
                     transaction = {
                         'transaction_id': int(row['transaction_id']),
-                        'date': trans_date,
+                        'date': parsed_date,
                         'customer_id': int(row['customer_id']),
                         'amount': amount,
                         'type': row['type'],
