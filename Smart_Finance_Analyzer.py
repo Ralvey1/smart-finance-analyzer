@@ -1,18 +1,16 @@
-# Cleaned and corrected version of the Smart Personal Finance Analyzer
-
 import csv
 from datetime import datetime
 
-# Define transaction types globally
 TRANSACTION_TYPES = {"credit", "debit", "transfer"}
 
 def parse_transaction(row):
-    """Convert a CSV row into a transaction dictionary."""
     try:
         parsed_date = datetime.strptime(row["date"], "%Y-%m-%d")
         amount = float(row["amount"])
         if row["type"] == "debit":
             amount *= -1
+        if row["type"] not in TRANSACTION_TYPES:
+            raise ValueError("Invalid transaction type.")
         return {
             "transaction_id": int(row["transaction_id"]),
             "date": parsed_date,
@@ -26,7 +24,6 @@ def parse_transaction(row):
         return None
 
 def load_transactions(filename="financial_transactions.csv"):
-    """Read transactions from a CSV file."""
     transactions = []
     try:
         with open(filename, mode='r', newline='') as file:
@@ -40,8 +37,23 @@ def load_transactions(filename="financial_transactions.csv"):
         print("Error: File not found.")
     return transactions
 
+def save_transactions(transactions, filename="financial_transactions.csv"):
+    with open(filename, mode='w', newline='') as file:
+        fieldnames = ["transaction_id", "date", "customer_id", "amount", "type", "description"]
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        for t in transactions:
+            writer.writerow({
+                "transaction_id": t["transaction_id"],
+                "date": t["date"].strftime("%Y-%m-%d"),
+                "customer_id": t["customer_id"],
+                "amount": abs(t["amount"]),
+                "type": t["type"],
+                "description": t["description"],
+            })
+    print("Transactions saved.")
+
 def add_transaction(transactions):
-    """Prompt the user for a new transaction and append it to the list."""
     try:
         date_input = input("Enter date (YYYY-MM-DD): ")
         date = datetime.strptime(date_input, "%Y-%m-%d")
@@ -58,7 +70,6 @@ def add_transaction(transactions):
             amount *= -1
 
         description = input("Enter description: ")
-
         new_id = max((t["transaction_id"] for t in transactions), default=0) + 1
 
         new_transaction = {
@@ -77,7 +88,10 @@ def add_transaction(transactions):
         print(f"Error: {e}")
 
 def view_transactions(transactions):
-    """Display a table of all transactions."""
+    if not transactions:
+        print("No transactions to display.")
+        return
+
     header = (
         f"{'ID':<5}{'Date':<15}{'Customer':<10}"
         f"{'Amount':<10}{'Type':<10}Description"
@@ -93,7 +107,6 @@ def view_transactions(transactions):
         print(line)
 
 def analyze_finances(transactions):
-    """Print totals by transaction type and the net balance."""
     totals = {'credit': 0, 'debit': 0, 'transfer': 0}
     net = 0
     for t in transactions:
@@ -107,16 +120,72 @@ def analyze_finances(transactions):
         print(f"Total {key.title()}s: ${val:.2f}")
     print(f"Net Balance: ${net:.2f}")
 
+def edit_transaction(transactions):
+    try:
+        trans_id = int(input("Enter transaction ID to edit: "))
+        t = next((tx for tx in transactions if tx["transaction_id"] == trans_id), None)
+        if not t:
+            print("Transaction not found.")
+            return
+
+        print("Press Enter to keep the current value.")
+        date_input = input(f"Date ({t['date'].strftime('%Y-%m-%d')}): ")
+        if date_input:
+            t['date'] = datetime.strptime(date_input, "%Y-%m-%d")
+
+        cust_input = input(f"Customer ID ({t['customer_id']}): ")
+        if cust_input:
+            t['customer_id'] = int(cust_input)
+
+        amount_input = input(f"Amount ({abs(t['amount'])}): ")
+        if amount_input:
+            amount = float(amount_input)
+            t['amount'] = -amount if t['type'] == 'debit' else amount
+
+        type_input = input(f"Type ({t['type']}): ").lower()
+        if type_input:
+            if type_input in TRANSACTION_TYPES:
+                if type_input == 'debit':
+                    t['amount'] = -abs(t['amount'])
+                else:
+                    t['amount'] = abs(t['amount'])
+                t['type'] = type_input
+            else:
+                print("Invalid type. Keeping old value.")
+
+        desc_input = input(f"Description ({t['description']}): ")
+        if desc_input:
+            t['description'] = desc_input
+
+        print("Transaction updated.")
+    except Exception as e:
+        print(f"Error: {e}")
+
+def delete_transaction(transactions):
+    try:
+        trans_id = int(input("Enter transaction ID to delete: "))
+        index = next((i for i, tx in enumerate(transactions) if tx["transaction_id"] == trans_id), None)
+        if index is not None:
+            transactions.pop(index)
+            print("Transaction deleted.")
+        else:
+            print("Transaction not found.")
+    except Exception as e:
+        print(f"Error: {e}")
+
 def main():
-    """Command-line interface for the finance analyzer."""
     transactions = []
     while True:
         print("\nSmart Personal Finance Analyzer")
         print("1. Load Transactions")
         print("2. Add Transaction")
         print("3. View Transactions")
-        print("4. Analyze Finances")
-        print("5. Exit")
+        print("4. Edit Transaction")
+        print("5. Delete Transaction")
+        print("6. Analyze Finances")
+        print("7. Save Transactions")
+        print("8. Exit")
+
         choice = input("Select an option: ")
         if choice == '1':
             transactions = load_transactions()
@@ -125,10 +194,18 @@ def main():
         elif choice == '3':
             view_transactions(transactions)
         elif choice == '4':
-            analyze_finances(transactions)
+            edit_transaction(transactions)
         elif choice == '5':
+            delete_transaction(transactions)
+        elif choice == '6':
+            analyze_finances(transactions)
+        elif choice == '7':
+            save_transactions(transactions)
+        elif choice == '8':
             print("Goodbye!")
             break
         else:
             print("Invalid option.")
 
+if __name__ == "__main__":
+    main()
