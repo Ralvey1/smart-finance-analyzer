@@ -7,20 +7,21 @@ def parse_transaction(row):
     try:
         parsed_date = datetime.strptime(row["date"], "%Y-%m-%d")
         amount = float(row["amount"])
-        if row["type"] == "debit":
-            amount *= -1
-        if row["type"] not in TRANSACTION_TYPES:
+        ttype = row["type"].lower()
+        if ttype not in TRANSACTION_TYPES:
             raise ValueError("Invalid transaction type.")
+        if ttype == "debit":
+            amount *= -1
         return {
             "transaction_id": int(row["transaction_id"]),
             "date": parsed_date,
             "customer_id": int(row["customer_id"]),
             "amount": amount,
-            "type": row["type"],
+            "type": ttype,
             "description": row["description"],
         }
-    except Exception:
-        print(f"Skipping invalid row: {row}")
+    except Exception as e:
+        print(f"Skipping invalid row {row}: {e}")
         return None
 
 def load_transactions(filename="financial_transactions.csv"):
@@ -47,7 +48,7 @@ def save_transactions(transactions, filename="financial_transactions.csv"):
                 "transaction_id": t["transaction_id"],
                 "date": t["date"].strftime("%Y-%m-%d"),
                 "customer_id": t["customer_id"],
-                "amount": abs(t["amount"]),
+                "amount": t["amount"],
                 "type": t["type"],
                 "description": t["description"],
             })
@@ -57,7 +58,6 @@ def add_transaction(transactions):
     try:
         date_input = input("Enter date (YYYY-MM-DD): ")
         date = datetime.strptime(date_input, "%Y-%m-%d")
-
         customer_id = int(input("Enter customer ID: "))
         amount = float(input("Enter amount: "))
         trans_type = input("Enter type (credit/debit/transfer): ").lower()
@@ -139,17 +139,14 @@ def edit_transaction(transactions):
 
         amount_input = input(f"Amount ({abs(t['amount'])}): ")
         if amount_input:
-            amount = float(amount_input)
-            t['amount'] = -amount if t['type'] == 'debit' else amount
+            new_amt = float(amount_input)
+            t['amount'] = -new_amt if t['type'] == 'debit' else new_amt
 
         type_input = input(f"Type ({t['type']}): ").lower()
         if type_input:
             if type_input in TRANSACTION_TYPES:
-                if type_input == 'debit':
-                    t['amount'] = -abs(t['amount'])
-                else:
-                    t['amount'] = abs(t['amount'])
                 t['type'] = type_input
+                t['amount'] = -abs(t['amount']) if type_input == 'debit' else abs(t['amount'])
             else:
                 print("Invalid type. Keeping old value.")
 
